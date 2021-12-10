@@ -4,7 +4,7 @@ const galleryContainer = document.querySelector(".gallery");
 const galleryItemMarkup = createImageGalleryMarkup(galleryItems);
 galleryContainer.insertAdjacentHTML("beforeend", galleryItemMarkup);
 
-galleryContainer.addEventListener("click", onGalleryContainerClick);
+galleryContainer.addEventListener("click", onImageClick);
 
 function createImageGalleryMarkup(galleryItems) {
   return galleryItems
@@ -22,27 +22,39 @@ function createImageGalleryMarkup(galleryItems) {
     })
     .join("");
 }
-
-function onGalleryContainerClick(event) {
+function onImageClick(event) {
   event.preventDefault();
   const isGalleryItem = event.target.classList.contains("gallery__image");
   if (!isGalleryItem) {
     return;
   }
+  document.addEventListener("keydown", closeModal);
 
-  const modalWindow = basicLightbox.create(`
-      <div class="modal">
-          <img src="${event.target.dataset.source}" width ="800" height = "600">
-      </div>
-  `);
-  modalWindow.show();
+  const modalWindow = basicLightbox.create(
+    `
+    <div class="modal">
+    <img src="${event.target.dataset.source}" width ="800" height = "600">
+    </div>
+    `,
+    {
+      onShow: (modalWindow) => {
+        console.log("onShow", modalWindow);
+      },
+      onClose: (modalWindow) => {
+        document.removeEventListener("keydown", closeModal);
+        console.log("onClose", modalWindow);
+      },
+    }
+  );
+  showModal();
+  closeModal(event);
 
-  document.addEventListener("keydown", onEscapeClick);
-
-  function onEscapeClick(event) {
+  function showModal() {
+    modalWindow.show();
+  }
+  function closeModal(event) {
     if (event.code === "Escape") {
       modalWindow.close();
-      document.removeEventListener("keydown", onEscapeClick);
     }
   }
 }
